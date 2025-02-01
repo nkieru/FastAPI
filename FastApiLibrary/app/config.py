@@ -22,8 +22,8 @@ def db_url():
 
 
 class Genre(str, Enum):
-    genre_1 = "Жанр_1"
-    genre_2 = "Жанр_2"
-    genre_3 = "Жанр_3"
-    genre_4 = "Жанр_4"
-    genre_5 = "Жанр_5"
+    genre_1 = "Genre_1"
+    genre_2 = "Genre_2"
+    genre_3 = "Genre_3"
+    genre_4 = "Genre_4"
+    genre_5 = "Genre_5"
