@@ -11,6 +11,7 @@ class AuthorSchema(BaseModel):
     biography: Optional[str] = Field(None, max_length=500, description="Биография автора, до 500 символов")
     date_of_birth: date = Field(default=..., description="Дата рождения автора в формате ГГГГ-ММ-ДД")
     books: List['BookTitleSchema'] = []
+
     class Config:
         orm_mode = True
 
@@ -117,6 +118,14 @@ class BookUpdateSchema(BaseModel):
     class Config:
         orm_mode = True
 
+
+class AuthorUpdateSchema(BaseModel):
+    name: Optional[str] = Field(default=None, min_length=1, max_length=100, description="Имя автора, от 1 до 100 символов")
+    biography: Optional[str] = Field(None, max_length=500, description="Биография автора, до 500 символов")
+    date_of_birth: Optional[date] = Field(default=None, description="Дата рождения автора в формате ГГГГ-ММ-ДД")
+
+    class Config:
+        orm_mode = True
 
 
 class BookTitleSchema(BaseModel):

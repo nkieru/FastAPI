@@ -2,11 +2,9 @@ from fastapi import FastAPI
 from fastapi import APIRouter, Depends
 from fastapi_filter import FilterDepends
 from fastapi_pagination import Page, add_pagination
-from sqlalchemy import select, update, delete
-from app.filters import *
-from app.schemas import BookSchema, AuthorSchema, BookSchemaAdd, AuthorSchemaAdd, AuthorBookSchema, BookUpdateSchema
 from app.models import AuthorBook
-
+from app.utils import *
+from app.schemas import *
 
 
 app = FastAPI()
@@ -52,53 +50,20 @@ async def get_filter_authors(author_filter: AuthorFilter = FilterDepends(AuthorF
 
 @router_books.post("/add_book/")
 async def create_book(book: BookSchemaAdd = Depends()) -> BookSchema | dict:
-    result = await add_book(**book.to_dict())
+    result = await add_object(Book, **book.to_dict())
     return {"message": f"Book created! ID={result} {book}."}
 
 
-async def add_book(**book_data: BookSchemaAdd):
-    async with async_session_maker() as session:
-        async with session.begin():
-            new_book = Book(**book_data)
-            session.add(new_book)
-            await session.flush()
-            new_book_id = new_book.id
-            await session.commit()
-            return new_book_id
-
-
 @router_authors.post("/add_author/")
-async def create_book(author: AuthorSchemaAdd = Depends()) -> AuthorSchema | dict:
-    result = await add_author(**author.to_dict())
+async def create_author(author: AuthorSchemaAdd = Depends()) -> AuthorSchema | dict:
+    result = await add_object(Author, **author.to_dict())
     return {"message": f"Author created! ID={result} {author}."}
 
 
-async def add_author(**author_data: AuthorSchemaAdd):
-    async with async_session_maker() as session:
-        async with session.begin():
-            new_author = Author(**author_data)
-            session.add(new_author)
-            await session.flush()
-            new_author_id = new_author.id
-            await session.commit()
-            return new_author_id
-
-
 @router_authors.post('/relation_author_book/')
-async def author_book_relation(relation: AuthorBookSchema = Depends()):
-    result = await add_author_book(**relation.to_dict())
+async def create_author_book_relation(relation: AuthorBookSchema = Depends()):
+    result = await add_object(AuthorBook, **relation.to_dict())
     return {"message": f"Relation created! ID={result} {relation}."}
-
-
-async def add_author_book(**author_book_data: AuthorBookSchema):
-    async with async_session_maker() as session:
-        async with session.begin():
-            new_relation = AuthorBook(**author_book_data)
-            session.add(new_relation)
-            await session.flush()
-            new_relation_id = new_relation.id
-            await session.commit()
-            return new_relation_id
 
 
 @router_books.delete("/{book_id}/delete", summary="Delete book")
@@ -107,16 +72,8 @@ async def delete_book_by_id(book_id: int):
     if book_to_delete is None:
         return {'message': f'Book ID = {book_id} not found!'}
     else:
-        await delete_book(book_id=book_id)
+        await delete_object(model=Book, model_id=book_id)
         return {"message": f"Book with ID {book_id} deleted!"}
-
-
-async def delete_book(book_id: int):
-    async with async_session_maker() as session:
-        async with session.begin():
-            await session.execute(delete(Book).filter_by(id=book_id))
-            await session.commit()
-            return book_id
 
 
 @router_authors.delete("/{author_id}/delete", summary="Delete author")
@@ -125,47 +82,22 @@ async def delete_author_by_id(author_id: int):
     if author_to_delete is None:
         return {'message': f'Book ID = {author_id} not found!'}
     else:
-        await delete_author(author_id=author_id)
+        await delete_object(model=Author, model_id=author_id)
         return {"message": f"Book with ID {author_id} deleted!"}
 
 
-async def delete_author(author_id: int):
-    async with async_session_maker() as session:
-        async with session.begin():
-            await session.execute(delete(Author).filter_by(id=author_id))
-            await session.commit()
-            return author_id
+@router_books.patch("/{book_id}/patch", summary="Update book")
+async def patch_book_by_id(book_id: int, book: BookUpdateSchema = Depends()) -> BookSchema | dict:
+    find_book = await find_id_data(model=Book, model_id=book_id)
+    result = await change_book(book_id, book, find_book)
+    return {'message': f"Book: {find_book}. Changes: {result}."}
 
 
-async def find_id_data(model, model_id):
-    async with async_session_maker() as session:
-        query = select(model).filter_by(id=model_id)
-        result = await session.execute(query)
-        model_info = result.scalar_one_or_none()
-        if not model_info:
-            return None
-        else:
-            model_data = model_info.to_dict()
-            return model_data
-
-
-# @router_books.patch("/{book_id}/patch", summary="Update book")
-# async def patch_book_by_id(book_id: int, book: BookUpdateSchema = Depends()) -> BookSchema | dict:
-#     find_book = await find_id_data(model=Book, model_id=book_id)
-#     result = await patch_book(find_book, book)
-#     return {"message": f"Book {find_book} updated to {result}."}
-#
-#
-# async def patch_book(find_book, book: BookUpdateSchema):
-#     async with async_session_maker() as session:
-#         async with session.begin():
-#             book_model = Book(**find_book).to_dict()
-#             update_data = book.dict(exclude_unset=True)
-#             put_data = {key: update_data.get(key, book_model[key]) for key in update_data if update_data[key]}
-#             book_model |= put_data
-#             # await session.add(book_model)
-#             await session.commit()
-#             return book_model
+@router_authors.patch("/{author_id}/patch", summary="Update author")
+async def patch_author_by_id(author_id: int, author: AuthorUpdateSchema = Depends()) -> AuthorSchema | dict:
+    find_author = await find_id_data(model=Author, model_id=author_id)
+    result = await change_author(author_id, author, find_author)
+    return {'message': f"Author: {find_author}. Changes: {result}."}
 
 
 app.include_router(router_books)
