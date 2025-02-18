@@ -6,13 +6,16 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
+
 import sys
 from os.path import dirname, abspath
 
 sys.path.insert(0, dirname(dirname(abspath(__file__))))
 
 from app.database import DATABASE_URL, Base
-from app.models import Author, Book, AuthorBook
+from app.models import *
+from app.users.models import User
+
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -28,7 +31,6 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-# target_metadata = None
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,

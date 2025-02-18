@@ -5,6 +5,8 @@ from fastapi_pagination import Page, add_pagination
 from app.models import AuthorBook
 from app.utils import *
 from app.schemas import *
+from app.users.router import router_users
+
 
 
 app = FastAPI()
@@ -48,19 +50,19 @@ async def get_filter_authors(author_filter: AuthorFilter = FilterDepends(AuthorF
     return result
 
 
-@router_books.post("/add_book/")
+@router_books.post("/add_book/", summary="Add book")
 async def create_book(book: BookSchemaAdd = Depends()) -> BookSchema | dict:
     result = await add_object(Book, **book.to_dict())
     return {"message": f"Book created! ID={result} {book}."}
 
 
-@router_authors.post("/add_author/")
+@router_authors.post("/add_author/", summary="Add author")
 async def create_author(author: AuthorSchemaAdd = Depends()) -> AuthorSchema | dict:
     result = await add_object(Author, **author.to_dict())
     return {"message": f"Author created! ID={result} {author}."}
 
 
-@router_authors.post('/relation_author_book/')
+@router_authors.post('/relation_author_book/', summary="Add author_book relation")
 async def create_author_book_relation(relation: AuthorBookSchema = Depends()):
     result = await add_object(AuthorBook, **relation.to_dict())
     return {"message": f"Relation created! ID={result} {relation}."}
@@ -102,5 +104,6 @@ async def patch_author_by_id(author_id: int, author: AuthorUpdateSchema = Depend
 
 app.include_router(router_books)
 app.include_router(router_authors)
+app.include_router(router_users)
 
 add_pagination(app)

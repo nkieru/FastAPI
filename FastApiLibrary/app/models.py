@@ -57,3 +57,4 @@ class AuthorBook(Base):
             "author_id": self.author_id,
             "book_id": self.book_id
         }
+

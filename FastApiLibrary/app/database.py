@@ -12,6 +12,7 @@ async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
 
 str_nullable = Annotated[str, mapped_column(nullable=True)]
 int_pk = Annotated[int, mapped_column(primary_key=True, autoincrement=True)]
+uniq = Annotated[str, mapped_column(unique=True, nullable=False)]
 
 
 class Base(AsyncAttrs, DeclarativeBase):

@@ -3,10 +3,35 @@ from app.filters import *
 from app.schemas import BookUpdateSchema, AuthorUpdateSchema
 from app.models import Author, Book
 
+from fastapi_pagination.ext.sqlalchemy import paginate
+
 
 async def find_id_data(model, model_id):
     async with async_session_maker() as session:
         query = select(model).filter_by(id=model_id)
+        result = await session.execute(query)
+        model_info = result.scalar_one_or_none()
+        if not model_info:
+            return None
+        else:
+            model_data = model_info.to_dict()
+            return model_data
+
+
+async def find_all_data(model):
+    async with async_session_maker() as session:
+        query = select(model)
+        result = await session.execute(query)
+        model_info = result.scalars().all()
+        if not model_info:
+            return None
+        else:
+            return await paginate(session, query)
+
+
+async def find_email(model, model_email):
+    async with async_session_maker() as session:
+        query = select(model).filter_by(email=model_email)
         result = await session.execute(query)
         model_info = result.scalar_one_or_none()
         if not model_info:

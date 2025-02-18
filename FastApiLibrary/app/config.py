@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     DB_PORT: int
     DB_NAME: str
 
-    model_config = SettingsConfigDict(env_file=join(dirname(__file__), '.env'))
+    model_config = SettingsConfigDict(env_file=join(dirname(__file__), '.env'), extra="ignore")
 
 
 settings = Settings()
@@ -19,6 +19,10 @@ settings = Settings()
 def db_url():
     return (f"postgresql+asyncpg://{settings.DB_LOGIN}:{settings.DB_PASS}@"
             f"{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_NAME}")
+
+
+def get_auth_data():
+    return {"secret_key": settings.SECRET_KEY, "algorithm": settings.ALGORITHM}
 
 
 class Genre(str, Enum):
