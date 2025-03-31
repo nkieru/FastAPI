@@ -16,5 +16,15 @@ class User(Base):
 
     extend_existing = True
 
+    def to_dict(self):
+        return {
+            "id": self.id,
+            'phone_number': self.phone_number,
+            'first_name': self.first_name,
+            'last_name': self.last_name,
+            'email': self.email,
+            'password': self.password
+        }
+
     def __repr__(self):
         return f"{self.__class__.__name__}(id={self.id})"

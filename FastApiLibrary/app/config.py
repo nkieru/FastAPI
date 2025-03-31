@@ -9,6 +9,8 @@ class Settings(BaseSettings):
     DB_HOST: str
     DB_PORT: int
     DB_NAME: str
+    SECRET_KEY: str
+    ALGORITHM: str
 
     model_config = SettingsConfigDict(env_file=join(dirname(__file__), '.env'), extra="ignore")
 
